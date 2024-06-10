@@ -34,29 +34,34 @@ $(document).ready(function() {
             minLength: 0,
             source: function(request, response) {
                 const recentSearches = getRecentSearches();
-                const systems = getOptions();
-                const matches = $.ui.autocomplete.filter(systems, request.term).slice(0, 5);
+                const items = getOptions();
+                const matches = $.ui.autocomplete.filter(items, request.term).slice(0, 5);
 
                 response([
-                    ...recentSearches.map(search => ({ label: search, category: "Búsquedas recientes" })),
-                    ...matches.map(search => ({ label: search, category: "Coincidencias" })),
-                    ...systems.map(search => ({ label: search, category: "Todos los sistemas" }))
+                    ...recentSearches.map(search => ({ label: search, category: "RECENT_SEARCHES", categoryLabel: 'Búsquedas recientes'})),
+                    ...matches.map(search => ({ label: search, category: "MATCHES", categoryLabel: 'Coincidencias'})),
+                    ...items.map(search => ({ label: search, category: "ITEMS", categoryLabel: 'Todos los sistemas'}))
                 ]);
             },
             focus: function(event, ui) {
-                searchInput.val(ui.item.label);
+                if (ui.item) {
+                    searchInput.val(ui.item.label);
+                }
+
                 return false;
             },
             select: function(event, ui) {
-                saveRecentSearch(ui.item.label);
-                searchInput.val(ui.item.label);
+                if (ui.item) {
+                    saveRecentSearch(ui.item.label);
+                    searchInput.val(ui.item.label);
+                }
                 return false;
             }
         }).autocomplete("instance")._renderItem = function(ul, item) {
             const li = $("<li>")
                 .append("<div class='autocomplete-item ui-menu-item-wrapper'>" + item.label + "</div>");
 
-            if (item.category === "Búsquedas recientes") {
+            if (item.category === "RECENT_SEARCHES") {
                 const removeIcon = $("<span class='remove-tag'>&times;</span>").click(function() {
                     removeRecentSearch(item.label);
                     searchInput.autocomplete("search", "");
@@ -71,7 +76,7 @@ $(document).ready(function() {
             let currentCategory = "";
             $.each(items, function(index, item) {
                 if (item.category !== currentCategory) {
-                    ul.append("<li class='ui-autocomplete-category'>" + item.category + "</li>");
+                    ul.append("<li class='ui-autocomplete-category'>" + item.categoryLabel + "</li>");
                     currentCategory = item.category;
                 }
                 searchInput.autocomplete("instance")._renderItemData(ul, item);
@@ -86,7 +91,7 @@ $(document).ready(function() {
         searchInput.on('blur', function() {
             setTimeout(() => {
                 $('.autocomplete-suggestions').remove();
-                selectArrow.hide(); 
+                selectArrow.hide();
             }, 100);
         });
     };
