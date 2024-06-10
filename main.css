@@ -1,0 +1,68 @@
+body {
+    background-color: #2e2e2e;
+    color: #ffffff;
+}
+.ui-autocomplete-category {
+    font-weight: bold;
+    color: #007bff;
+    padding: 5px 10px;
+    margin: 0;
+}
+.recent-searches-tag {
+    background-color: #e2e6ea;
+    border-radius: 15px;
+    padding: 5px 10px;
+    margin: 0 5px 5px 0;
+    display: inline-block;
+    color: #333;
+}
+.remove-tag {
+    cursor: pointer;
+    color: red;
+    margin-left: 5px;
+}
+.ui-menu-item-wrapper {
+    padding: 5px 10px;
+}
+.custom-select {
+    display: none;
+}
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    color: #333;
+}
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.autocomplete-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.autocomplete-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    display: none; /* Oculto inicialmente */
+    color: #007bff;
+}
+
+.form-control:focus + .select-arrow {
+    display: inline; /* Mostrar cuando el input está enfocado */
+}

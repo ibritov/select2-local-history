@@ -8,4 +8,3 @@ This project is an implementation of a custom autocomplete select component with
 - Recent searches displayed as tags with remove option
 - Categories in the dropdown: Recent Searches, Matches, and All Systems
 - Responsive design with Bootstrap
-- Pure JavaScript, no dependencies on jQuery
