@@ -30,71 +30,68 @@ $(document).ready(function() {
             }).get();
         };
 
-        searchInput.autocomplete({
-            minLength: 0,
-            source: function(request, response) {
-                const recentSearches = getRecentSearches();
-                const items = getOptions();
-                const matches = $.ui.autocomplete.filter(items, request.term).slice(0, 5);
-
-                response([
-                    ...recentSearches.map(search => ({ label: search, category: "RECENT_SEARCHES", categoryLabel: 'Búsquedas recientes'})),
-                    ...matches.map(search => ({ label: search, category: "MATCHES", categoryLabel: 'Coincidencias'})),
-                    ...items.map(search => ({ label: search, category: "ITEMS", categoryLabel: 'Todos los sistemas'}))
-                ]);
-            },
-            focus: function(event, ui) {
-                if (ui.item) {
-                    searchInput.val(ui.item.label);
-                }
-
-                return false;
-            },
-            select: function(event, ui) {
-                if (ui.item) {
-                    saveRecentSearch(ui.item.label);
-                    searchInput.val(ui.item.label);
-                }
-                return false;
-            }
-        }).autocomplete("instance")._renderItem = function(ul, item) {
-            const li = $("<li>")
-                .append("<div class='autocomplete-item ui-menu-item-wrapper'>" + item.label + "</div>");
-
-            if (item.category === "RECENT_SEARCHES") {
-                const removeIcon = $("<span class='remove-tag'>&times;</span>").click(function() {
-                    removeRecentSearch(item.label);
-                    searchInput.autocomplete("search", "");
-                });
-                li.find(".ui-menu-item-wrapper").addClass("recent-searches-tag").append(removeIcon);
-            }
-
-            return li.appendTo(ul);
-        };
-
-        searchInput.autocomplete("instance")._renderMenu = function(ul, items) {
+        const renderMenu = (container, items) => {
+            container.empty();
             let currentCategory = "";
             $.each(items, function(index, item) {
                 if (item.category !== currentCategory) {
-                    ul.append("<li class='ui-autocomplete-category'>" + item.categoryLabel + "</li>");
+                    container.append("<div class='ui-autocomplete-category'>" + item.categoryLabel + "</div>");
                     currentCategory = item.category;
                 }
-                searchInput.autocomplete("instance")._renderItemData(ul, item);
+                const div = $("<div>").text(item.label).addClass('ui-menu-item-wrapper');
+                if (item.category === "RECENT_SEARCHES") {
+                    const removeIcon = $("<span class='remove-tag'>&times;</span>").click(function(event) {
+                        event.stopPropagation();
+                        removeRecentSearch(item.label);
+                        searchInput.trigger("keyup");
+                    });
+                    div.addClass("recent-searches-tag").append(removeIcon);
+                }
+                container.append(div);
             });
         };
 
-        searchInput.on('focus', function() {
-            $(this).autocomplete("search", "");
+        searchInput.on('keyup focus', function() {
+            const term = searchInput.val();
+            const recentSearches = getRecentSearches();
+            const items = getOptions();
+            const matches = items.filter(item => item.toLowerCase().includes(term.toLowerCase())).slice(0, 5);
+
+            const results = [
+                ...recentSearches.map(search => ({ label: search, category: "RECENT_SEARCHES", categoryLabel: 'Búsquedas recientes'})),
+                ...matches.map(search => ({ label: search, category: "MATCHES", categoryLabel: 'Coincidencias'})),
+                ...items.map(search => ({ label: search, category: "ITEMS", categoryLabel: 'Todos los sistemas'}))
+            ];
+
+            renderMenu($(`#${searchInputId}_suggestions`), results);
+            $(`#${searchInputId}_suggestions`).show();
             selectArrow.show();
         });
 
         searchInput.on('blur', function() {
             setTimeout(() => {
-                $('.autocomplete-suggestions').remove();
+                $(`#${searchInputId}_suggestions`).hide();
                 selectArrow.hide();
             }, 100);
         });
+
+        $('body').on('click', `#${searchInputId}_suggestions .ui-menu-item-wrapper`, function() {
+            const selectedItem = $(this).text();
+            saveRecentSearch(selectedItem);
+            searchInput.val(selectedItem);
+            $(`#${searchInputId}_suggestions`).hide();
+        });
+
+        $('body').on('mouseenter', `#${searchInputId}_suggestions .ui-menu-item-wrapper`, function() {
+            $(this).addClass('ui-state-focus');
+        }).on('mouseleave', `#${searchInputId}_suggestions .ui-menu-item-wrapper`, function() {
+            $(this).removeClass('ui-state-focus');
+        });
     };
+
+    // Create the suggestions container and append it to the body
+    $('<div id="searchInput_suggestions" class="autocomplete-suggestions" style="display: none"></div>').appendTo('.search-input-div');
+    $('<div id="anotherSearchInput_suggestions" class="autocomplete-suggestions" style="display: none"></div>').appendTo('body');
 
     initAutocomplete('searchInput', 'systemSelect');
     initAutocomplete('anotherSearchInput', 'anotherSelect');
